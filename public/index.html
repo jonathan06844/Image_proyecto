@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Usuarios</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    .record-list {
+      list-style: none;
+      padding: 0;
+    }
+    .record-item {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Registro de Usuarios</h1>
+
+    <form id="createForm">
+      <h2>Crear Registro</h2>
+      <input type="text" id="name" placeholder="Nombre" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="number" id="age" placeholder="Edad" required>
+      <button type="submit">Crear Registro</button>
+    </form>
+
+    <form id="updateForm">
+      <h2>Actualizar Registro</h2>
+      <input type="text" id="updateId" placeholder="ID del Registro" required>
+      <input type="text" id="updateName" placeholder="Nombre">
+      <input type="email" id="updateEmail" placeholder="Email">
+      <input type="number" id="updateAge" placeholder="Edad">
+      <button type="submit">Actualizar Registro</button>
+    </form>
+
+    <form id="deleteForm">
+      <h2>Eliminar Registro</h2>
+      <input type="text" id="deleteId" placeholder="ID del Registro" required>
+      <button type="submit">Eliminar Registro</button>
+    </form>
+
+    <h2>Registros</h2>
+    <ul id="recordList" class="record-list"></ul>
+  </div>
+
+  <script>
+    // Función para actualizar la lista de registros
+    async function updateRecordList() {
+      const response = await fetch('/records');
+      const records = await response.json();
+      const recordList = document.getElementById('recordList');
+      recordList.innerHTML = '';
+      records.forEach(record => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+          <strong>${record.name}</strong><br>
+          Email: ${record.email}<br>
+          Edad: ${record.age}<br>
+          <small>ID: ${record._id}</small>
+        `;
+        recordList.appendChild(li);
+      });
+    }
+
+    // Crear un registro
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const age = document.getElementById('age').value;
+
+      await fetch('/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, age })
+      });
+
+      updateRecordList();
+      e.target.reset();
+    });
+
+    // Actualizar un registro
+    document.getElementById('updateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('updateId').value;
+      const name = document.getElementById('updateName').value;
+      const email = document.getElementById('updateEmail').value;
+      const age = document.getElementById('updateAge').value;
+
+      await fetch(`/records/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, age })
+      });
+
+      updateRecordList();
+      e.target.reset();
+    });
+
+    // Eliminar un registro
+    document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('deleteId').value;
+
+      await fetch(`/records/${id}`, {
+        method: 'DELETE'
+      });
+
+      updateRecordList();
+      e.target.reset();
+    });
+
+    // Cargar registros al iniciar
+    window.onload = updateRecordList;
+  </script>
+</body>
+</html>
